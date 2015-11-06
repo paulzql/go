@@ -219,6 +219,14 @@ func (p *ReverseProxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 	copyHeader(rw.Header(), res.Header)
 
+	// 302 support
+	if res.StatusCode == http.StatusFound {
+		uri,_ := url.Parse(res.Header.Get("Location"))
+		uri.Host = req.Host
+		uri.Scheme = req.URL.Scheme
+		rw.Header().Set("Location", uri.String())
+	}
+
 	// The "Trailer" header isn't included in the Transport's response,
 	// at least for *http.Transport. Build it up from Trailer.
 	if len(res.Trailer) > 0 {
